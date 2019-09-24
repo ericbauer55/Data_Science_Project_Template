@@ -25,6 +25,7 @@ class Folder:
             if any([reserved_names[i] in folder_name for i in range(len(reserved_names))]):
                 raise Exception('ReservedNameError')
             self.folder_name: str = folder_name
+            self.folder_name.replace(' ', '_')  # remove spaces
             if parent is None:
                 self.folder_name = '.'  # this is the root directory for the project, overwrite any user input
         except Exception as err:
@@ -70,13 +71,20 @@ class Folder:
 class ProjectTemplate:
     def __init__(self, template_file: str) -> None:
         self._template_file: str = template_file
-        self._template_df: pd.Dataframe = pd.read_csv(template_file)
-        print(self._template_df.head())
+        self._template: pd.Dataframe = pd.read_csv(template_file)
+        print(self._template.head())
         self._folder_tree: Dict[str, Folder] = {'root': Folder('root', None, None)}
 
     def create_project_tree(self, minimal: bool = False) -> None:
-        for i in range(self._template_df.shape[0]):
-            print(self._template_df.at[i, 'folder_name'])
+        for i in range(self._template.shape[0]):
+            #print(self._template_df.at[i, 'folder_name'])
+            try:
+                if not minimal or (self._template.at[i, 'minimal'] and minimal):  # see Karnaugh map
+                    self._folder_tree[self._template.at[i, 'folder_name']] = Folder(self._template.at[i, 'folder_name'],
+                                                                                    self._folder_tree[self._template.at[i, 'parent']],
+                                                                                    self._template.at[i, 'readme_text'])
+            except NameError as err:
+                print('Dictionary key not yet created: ', err)
 
 
 def create_project(minimal: bool = False) -> None:
