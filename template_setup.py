@@ -71,80 +71,20 @@ class Folder:
 class ProjectTemplate:
     def __init__(self, template_file: str) -> None:
         self._template_file: str = template_file
-        self._template: pd.Dataframe = pd.read_csv(template_file)
-        print(self._template.head())
+        self._df: pd.Dataframe = pd.read_csv(template_file)
         self._folder_tree: Dict[str, Folder] = {'root': Folder('root', None, None)}
 
     def create_project_tree(self, minimal: bool = False) -> None:
-        for i in range(self._template.shape[0]):
-            #print(self._template_df.at[i, 'folder_name'])
+        for i in range(self._df.shape[0]):
             try:
-                if not minimal or (self._template.at[i, 'minimal'] and minimal):  # see Karnaugh map
-                    self._folder_tree[self._template.at[i, 'folder_name']] = Folder(self._template.at[i, 'folder_name'],
-                                                                                    self._folder_tree[self._template.at[i, 'parent']],
-                                                                                    self._template.at[i, 'readme_text'])
+                if not minimal or (self._df.at[i, 'minimal'] and minimal):  # see Karnaugh map
+                    self._folder_tree[self._df.at[i, 'folder_name']] = Folder(self._df.at[i, 'folder_name'],
+                                                                              self._folder_tree[self._df.at[i, 'parent']],
+                                                                              self._df.at[i, 'readme_text'])
             except NameError as err:
+                names: pd.Series = self._df
                 print('Dictionary key not yet created: ', err)
 
-
-def create_project(minimal: bool = False) -> None:
-    # Read me strings and architecture are derived from:
-    # 1. https://github.com/makcedward/ds_project_template
-    # 2. http://projecttemplate.net/architecture.html
-
-    # Create the minimal directories
-    root = Folder('root', None, None)
-    data = Folder('data', root, """Folder for storing subset data for experiments. 
-                                It includes both raw data and processed data for temporary use.""""")
-    raw = Folder('raw', data, """Storing the raw result which is generated from "preparation" folder code. 
-                                My practice is storing a local subset copy rather than retrieving data from remote data 
-                                store from time to time. It guarantees you have a static dataset for rest of action. 
-                                Furthermore, we can isolate from data platform unstable issue and network 
-                                latency issue.""")
-    processed = Folder('processed', data, """To shorten model training time, it is a good idea to persist processed 
-                                          data. It should be generated from 'processing' folder.""")
-    src = Folder('src', root, """Stores source code (python, R etc) which serves multiple scenarios. During data 
-                              exploration and model training, we have to transform data for particular purpose. 
-                              We have to use same code to transfer data during online prediction as well. So it better
-                              separates code from notebook such that it serves different purpose.""")
-    preparation = Folder('preparation', src, """Data ingestion such as retrieving data from CSV, relational database, 
-                                             NoSQL, Hadoop etc. We have to retrieve data from multiple sources all the 
-                                             time so we better to have a dedicated function for data retrieval. """)
-    processing = Folder('processing', src, """Data transformation/ processing in case it what the model or eda needs.
-                                              Ideally, we have clean data that's rare. You may say that
-                                              we should have data engineering team helps on data transformation. 
-                                              However, we may not know what we need until studying the data. One of the
-                                              important requirements is both off-line training and online prediction 
-                                              should use same pipeline to reduce misalignment.""")
-    modeling = Folder('modeling', src, """Model building source code. It should not just include model training part,
-                                       but also evaluation part. On the other hand, we have to think about multiple 
-                                       models scenario. Typical use case is ensemble model such as combing Logistic
-                                        Regression model and Neural Network model.""")
-    visualize = Folder('visualize', src, """Here you can store any graphs that you produce. Other code-driven
-                                         visualizations or diagrams can be included here""")
-    # If the project is meant to be created with limited folders, return now
-    if minimal:
-        return
-    test = Folder('test', root, """In R&D, data science focus on building model but not make sure everything work well 
-                                in unexpected scenario. However, it will be a trouble if deploying model to API. Also, 
-                                test cases guarantee backward compatible issue but it takes time to implement it.""")
-    model = Folder('model', root, """Folder for storing binary (json or other format) file for local use.""")
-    notebook = Folder('notebook', root, """Storing all notebooks includeing EDA and modeling stage.""")
-    eda = Folder('eda', notebook, """Exploratory Data Analysis (aka Data Exploration) is a step for exploring what you 
-                                  have for later steps. For short term purpose, it should show what you explored. 
-                                  Typical example is showing data distribution. For long term, it should store in 
-                                  centralized place. """)
-    evaluation = Folder('evaluation', notebook, """Besides modeling, evaluation is another important step. For people
-                                                to trust the model, they must see how it performs""")
-    modeling = Folder('modeling', notebook, """Notebook contains your  model building & training. """)
-    poc = Folder('poc', notebook, """Occasionally, you have to do some PoC (Proof-of-Concept). It can be show in here 
-                                  for temporary purposes.""")
-    doc = Folder('doc', root, """Here you can store any documentation that you’ve written about your analysis. It can 
-                              also be used as root directory for GitHub Pages to create a project website.""")
-    profiling = Folder('profiling', root, """Here you can store any scripts you use to benchmark and time your code.""")
-    logs = Folder('logs', root, """Here you can store a log file of any work you’ve done on this project.""")
-    reports = Folder('reports', root, """Here you can store any output reports, such as HTML or LaTeX versions of 
-                                      tables, that you produce.""")
 
 
 if __name__ == '__main__':
