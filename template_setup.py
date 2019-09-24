@@ -1,7 +1,7 @@
 from __future__ import annotations  # allows Folder to reference itself as a type
 import os
 import pandas as pd
-from typing import Optional, List  # Optional is a type that could be None
+from typing import Optional, List, Dict  # Optional is a type that could be None
 
 
 def wrap(target: str, wrapping_str: str) -> str:
@@ -72,10 +72,12 @@ class ProjectTemplate:
         self._template_file: str = template_file
         self._template_df: pd.Dataframe = pd.read_csv(template_file)
         print(self._template_df.head())
+        self._folder_tree: Dict[str, Folder] = {'root': Folder('root', None, None)}
 
     def create_project_tree(self, minimal: bool = False) -> None:
         for i in range(self._template_df.shape[0]):
             print(self._template_df.at[i, 'folder_name'])
+
 
 def create_project(minimal: bool = False) -> None:
     # Read me strings and architecture are derived from:
