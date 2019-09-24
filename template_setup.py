@@ -127,6 +127,6 @@ def create_project(minimal: bool = False) -> None:
 
 
 if __name__ == '__main__':
-    create_project()
+    create_project(minimal=False)
 
 
