@@ -1,5 +1,6 @@
 from __future__ import annotations  # allows Folder to reference itself as a type
 import os
+import pandas as pd
 from typing import Optional, List  # Optional is a type that could be None
 
 
@@ -65,6 +66,15 @@ class Folder:
             f.write('Folder path: ' + wrap(self.folder_path, '`') + '\n\n')
             f.write(self.readme_text)
 
+
+class ProjectTemplate:
+    def __init__(self, template_file: str) -> None:
+        self._template_file: str = template_file
+        self._template_df: pd.Dataframe = pd.read_csv(template_file)
+        print(self._template_df.head())
+
+    def create_project_tree(self, minimal: bool = False) -> None:
+        pass
 
 def create_project(minimal: bool = False) -> None:
     # Read me strings and architecture are derived from:
