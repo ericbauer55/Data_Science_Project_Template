@@ -74,7 +74,8 @@ class ProjectTemplate:
         print(self._template_df.head())
 
     def create_project_tree(self, minimal: bool = False) -> None:
-        pass
+        for i in range(self._template_df.shape[0]):
+            print(self._template_df.at[i, 'folder_name'])
 
 def create_project(minimal: bool = False) -> None:
     # Read me strings and architecture are derived from:
@@ -137,6 +138,7 @@ def create_project(minimal: bool = False) -> None:
 
 
 if __name__ == '__main__':
-    create_project(minimal=False)
+    proj = ProjectTemplate('data_science_project_template.csv')
+    proj.create_project_tree()
 
 
