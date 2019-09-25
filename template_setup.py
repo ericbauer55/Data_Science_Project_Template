@@ -134,10 +134,7 @@ class ProjectTemplate:
             # If this does occur, then search for a LUT entry with that parent name & add it to the tree.
             # To prevent this issue from cascading to the next parent, check dictionary existence recursively
             # until the root directory is reached. If the parent doesn't exist yet, it should be added to dict.
-            try:
-                names: List[str] = (self._df.loc['folder_name']).to_list()
-            except Exception as err:
-                print(err.__repr__())
+            names: List[str] = (self._df['folder_name']).to_list()
             if parent not in names:
                 print('Parent folder {0} does not exist in the template file'.format(parent))
                 in_dict_flag = False
@@ -178,5 +175,6 @@ if __name__ == '__main__':
     proj = ProjectTemplate('backwards_child_definition_test.csv')
     print(proj._df.columns.to_list())
     proj.create_project_tree2()
+    #pd.read_csv('backwards_child_definition_test.csv')
 
 
