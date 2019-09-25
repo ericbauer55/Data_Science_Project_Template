@@ -77,27 +77,6 @@ class ProjectTemplate:
     def create_project_tree(self, minimal: bool = False) -> bool:
         creation_success: bool = True  # assume the tree will be created successfully until an error flags this as false
         for i in range(self._df.shape[0]):
-            folder_add_flag = False # assume the folder hasn't been added to the tree until it is marked true in 'else:'
-            while not folder_add_flag:
-                try:
-                    if not minimal or (self._df.at[i, 'minimal'] and minimal):  # see Karnaugh map
-                        self._folder_tree[self._df.at[i, 'folder_name']] = Folder(self._df.at[i, 'folder_name'],
-                                                                                  self._folder_tree[self._df.at[i, 'parent']],
-                                                                                  self._df.at[i, 'readme_text'])
-                except NameError as err:
-
-                    names: pd.Series = self._df.loc['folder_names']
-                    if not names[names == self._df.at[i, 'parent']].empty:
-                        index = names[names == self._df.at[i, 'folder_name']].index[0]
-                    else:
-                        pass
-                    print('Dictionary key not yet created: ', err)
-                else:
-                    folder_add_flag = True  # breaks the while loop so for loop moves onto next folder_name
-
-    def create_project_tree2(self, minimal: bool = False) -> bool:
-        creation_success: bool = True  # assume the tree will be created successfully until an error flags this as false
-        for i in range(self._df.shape[0]):
             # first check to see if that folder would be included in a minimal project tree!
             if not minimal or (self._df.at[i, 'minimal'] and minimal):  # see Karnaugh map
                 if not self._check_parent_branch_exists(minimal, self._df.at[i, 'parent']):
@@ -173,8 +152,6 @@ class ProjectTemplate:
 if __name__ == '__main__':
     # proj = ProjectTemplate('data_science_project_template.csv')
     proj = ProjectTemplate('backwards_child_definition_test.csv')
-    print(proj._df.columns.to_list())
-    proj.create_project_tree2()
-    #pd.read_csv('backwards_child_definition_test.csv')
+    proj.create_project_tree()
 
 
