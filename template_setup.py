@@ -98,14 +98,16 @@ class ProjectTemplate:
     def create_project_tree2(self, minimal: bool = False) -> bool:
         creation_success: bool = True  # assume the tree will be created successfully until an error flags this as false
         for i in range(self._df.shape[0]):
-            if not self._check_parent_branch_exists(minimal, self._df.at[i, 'parent']):
-                # if the any folder along the chain doesn't have a parent defined in the look-up table (LUT),
-                # then the child at index=i cannot be added without raising a NameError when looking up a parent key
-                # in the self._folder_tree dictionary of Folder objects. Project creation should end at this point
-                creation_success = False
-                break
-            else:
-                self._add_folder_to_tree(i, minimal)
+            # first check to see if that folder would be included in a minimal project tree
+            if not minimal or (self._df.at[i, 'minimal'] and minimal):  # see Karnaugh map
+                if not self._check_parent_branch_exists(minimal, self._df.at[i, 'parent']):
+                    # if the any folder along the chain doesn't have a parent defined in the look-up table (LUT),
+                    # then the child at index=i cannot be added without raising a NameError when looking up a parent key
+                    # in the self._folder_tree dictionary of Folder objects. Project creation should end at this point
+                    creation_success = False
+                    break
+                else:
+                    self._add_folder_to_tree(i, minimal)
         return creation_success
 
     def _check_parent_branch_exists(self, minimal: bool, parent: str) -> bool:
@@ -146,7 +148,7 @@ class ProjectTemplate:
             return in_dict_flag
 
     def _add_folder_to_tree(self, df_index: int, minimal: bool) -> None:
-        if not minimal or (self._df.at[df_index, 'minimal'] and minimal):  # see Karnaugh map
+
             name: str = self._df.at[df_index, 'folder_name']
             self._folder_tree[name] = Folder(self._df.at[df_index, 'folder_name'],
                                              self._folder_tree[self._df.at[df_index, 'parent']],
