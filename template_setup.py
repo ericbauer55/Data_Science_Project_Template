@@ -85,11 +85,7 @@ class ProjectTemplate:
                                                                                   self._folder_tree[self._df.at[i, 'parent']],
                                                                                   self._df.at[i, 'readme_text'])
                 except NameError as err:
-                    # It's possible that children folders are entered before their parent in the look-up table (LUT)
-                    # This shouldn't be discouraged, since LUT creation should be more flexible for the designer.
-                    # If this does occur, then search for a LUT entry with that parent name & add it to the tree.
-                    # To prevent this issue from cascading to the next parent, check dictionary existence recursively
-                    # until the root directory is reached.
+
                     names: pd.Series = self._df.loc['folder_names']
                     if not names[names == self._df.at[i, 'parent']].empty:
                         index = names[names == self._df.at[i, 'folder_name']].index[0]
@@ -99,7 +95,44 @@ class ProjectTemplate:
                 else:
                     folder_add_flag = True  # breaks the while loop so for loop moves onto next folder_name
 
+    def create_project_tree2(self, minimal: bool = False) -> bool:
+        creation_success: bool = True  # assume the tree will be created successfully until an error flags this as false
+        for i in range(self._df.shape[0]):
+            if not self._check_parent_branch_exists(i, minimal self._df.at[i, 'parent']):
+                # if the any folder along the chain doesn't have a parent defined in the look-up table (LUT),
+                # then the child at index=i cannot be added without raising a NameError when looking up a parent key
+                # in the self._folder_tree dictionary of Folder objects. Project creation should end at this point
+                creation_success = False
+                break
+            else:
+                self._add_folder_to_tree(i, minimal)
+        return creation_success
 
+    def _check_parent_branch_exists(self, df_index: int, minimal: bool, parent: str) -> bool:
+        # It's possible that children folders are entered before their parent in the look-up table (LUT)
+        # This shouldn't be discouraged, since LUT creation should be more flexible for the designer.
+        in_dict_flag = True # assume that the parent is already in the _folder_tree dictionary until proven otherwise
+        try:
+            folder: Folder = self._folder_tree[parent]
+        except NameError:
+            # If this does occur, then search for a LUT entry with that parent name & add it to the tree.
+            # To prevent this issue from cascading to the next parent, check dictionary existence recursively
+            # until the root directory is reached. If the parent doesn't exist yet, it should be created.
+            names: List[str] = self._df.loc['folder_names'].to_list()
+            if parent not in names:
+                index = names.index(parent)
+            else:
+                print('Parent folder {0} does not exist in the template file'.format(parent))
+                in_dict_flag = False
+        finally:
+            return in_dict_flag
+
+    def _add_folder_to_tree(self, df_index: int, minimal: bool) -> None:
+        if not minimal or (self._df.at[df_index, 'minimal'] and minimal):  # see Karnaugh map
+            name: str = self._df.at[df_index, 'folder_name']
+            self._folder_tree[name] = Folder(self._df.at[df_index, 'folder_name'],
+                                             self._folder_tree[self._df.at[df_index, 'parent']],
+                                             self._df.at[df_index, 'readme_text'])
 
 
 if __name__ == '__main__':
