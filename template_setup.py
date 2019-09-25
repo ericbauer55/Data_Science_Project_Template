@@ -74,16 +74,31 @@ class ProjectTemplate:
         self._df: pd.Dataframe = pd.read_csv(template_file)
         self._folder_tree: Dict[str, Folder] = {'root': Folder('root', None, None)}
 
-    def create_project_tree(self, minimal: bool = False) -> None:
+    def create_project_tree(self, minimal: bool = False) -> bool:
+        creation_success: bool = True  # assume the tree will be created successfully until an error flags this as false
         for i in range(self._df.shape[0]):
-            try:
-                if not minimal or (self._df.at[i, 'minimal'] and minimal):  # see Karnaugh map
-                    self._folder_tree[self._df.at[i, 'folder_name']] = Folder(self._df.at[i, 'folder_name'],
-                                                                              self._folder_tree[self._df.at[i, 'parent']],
-                                                                              self._df.at[i, 'readme_text'])
-            except NameError as err:
-                names: pd.Series = self._df
-                print('Dictionary key not yet created: ', err)
+            folder_add_flag = False # assume the folder hasn't been added to the tree until it is marked true in 'else:'
+            while not folder_add_flag:
+                try:
+                    if not minimal or (self._df.at[i, 'minimal'] and minimal):  # see Karnaugh map
+                        self._folder_tree[self._df.at[i, 'folder_name']] = Folder(self._df.at[i, 'folder_name'],
+                                                                                  self._folder_tree[self._df.at[i, 'parent']],
+                                                                                  self._df.at[i, 'readme_text'])
+                except NameError as err:
+                    # It's possible that children folders are entered before their parent in the look-up table (LUT)
+                    # This shouldn't be discouraged, since LUT creation should be more flexible for the designer.
+                    # If this does occur, then search for a LUT entry with that parent name & add it to the tree.
+                    # To prevent this issue from cascading to the next parent, check dictionary existence recursively
+                    # until the root directory is reached.
+                    names: pd.Series = self._df.loc['folder_names']
+                    if not names[names == self._df.at[i, 'parent']].empty:
+                        index = names[names == self._df.at[i, 'folder_name']].index[0]
+                    else:
+
+                    print('Dictionary key not yet created: ', err)
+                else:
+                    folder_add_flag = True  # breaks the while loop so for loop moves onto next folder_name
+
 
 
 
