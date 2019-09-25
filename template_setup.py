@@ -153,5 +153,6 @@ if __name__ == '__main__':
     # proj = ProjectTemplate('data_science_project_template.csv')
     proj = ProjectTemplate('backwards_child_definition_test.csv')
     proj.create_project_tree()
+    # TODO: check to make sure circular folder refernces don't infinite loop
 
 
