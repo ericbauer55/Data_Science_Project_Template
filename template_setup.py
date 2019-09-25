@@ -98,7 +98,7 @@ class ProjectTemplate:
     def create_project_tree2(self, minimal: bool = False) -> bool:
         creation_success: bool = True  # assume the tree will be created successfully until an error flags this as false
         for i in range(self._df.shape[0]):
-            if not self._check_parent_branch_exists(i, minimal self._df.at[i, 'parent']):
+            if not self._check_parent_branch_exists(minimal, self._df.at[i, 'parent']):
                 # if the any folder along the chain doesn't have a parent defined in the look-up table (LUT),
                 # then the child at index=i cannot be added without raising a NameError when looking up a parent key
                 # in the self._folder_tree dictionary of Folder objects. Project creation should end at this point
@@ -108,10 +108,22 @@ class ProjectTemplate:
                 self._add_folder_to_tree(i, minimal)
         return creation_success
 
-    def _check_parent_branch_exists(self, df_index: int, minimal: bool, parent: str) -> bool:
+    def _check_parent_branch_exists(self, minimal: bool, parent: str) -> bool:
+        """
+        This function checks if the @parent folder exists in the self._folder_tree dictionary
+
+        NOTE 1: If the parent doesn't exist in the dict but does in the self._df, then it will be added to the dict after
+        checking if it's parent exists. This checking and creation will continue until a parent is found to exist in
+        the dictionary.
+        TODO: finish logic for note 2
+        NOTE 2: If the parent exists in the dictionary but does NOT have same minimal status when minimal=True ...
+        :param minimal: flag of whether the folder tree should reflect a minimal project tree
+        :param parent: name of the parent folder to check
+        :return: if the parent exists in the self._folder_tree dictionary or is defined in the self._df, True
+        """
         # It's possible that children folders are entered before their parent in the look-up table (LUT)
         # This shouldn't be discouraged, since LUT creation should be more flexible for the designer.
-        in_dict_flag = True # assume that the parent is already in the _folder_tree dictionary until proven otherwise
+        in_dict_flag = True  # assume that the parent is already in the _folder_tree dictionary until proven otherwise
         try:
             folder: Folder = self._folder_tree[parent]
         except NameError:
