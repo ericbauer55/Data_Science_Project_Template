@@ -98,7 +98,7 @@ class ProjectTemplate:
     def create_project_tree2(self, minimal: bool = False) -> bool:
         creation_success: bool = True  # assume the tree will be created successfully until an error flags this as false
         for i in range(self._df.shape[0]):
-            # first check to see if that folder would be included in a minimal project tree
+            # first check to see if that folder would be included in a minimal project tree!
             if not minimal or (self._df.at[i, 'minimal'] and minimal):  # see Karnaugh map
                 if not self._check_parent_branch_exists(minimal, self._df.at[i, 'parent']):
                     # if the any folder along the chain doesn't have a parent defined in the look-up table (LUT),
