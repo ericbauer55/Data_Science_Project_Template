@@ -107,7 +107,7 @@ class ProjectTemplate:
                     creation_success = False
                     break
                 else:
-                    self._add_folder_to_tree(i, minimal)
+                    self._add_folder_to_tree(i)
         return creation_success
 
     def _check_parent_branch_exists(self, minimal: bool, parent: str) -> bool:
@@ -117,8 +117,10 @@ class ProjectTemplate:
         NOTE 1: If the parent doesn't exist in the dict but does in the self._df, then it will be added to the dict after
         checking if it's parent exists. This checking and creation will continue until a parent is found to exist in
         the dictionary.
-        TODO: finish logic for note 2
-        NOTE 2: If the parent exists in the dictionary but does NOT have same minimal status when minimal=True ...
+
+        NOTE 2: If the parent exists in the dictionary, but its minimal attribute is false when a minimal project is
+        required, then that is an error. How can the child be part of the minimal tree but not its parent?
+
         :param minimal: flag of whether the folder tree should reflect a minimal project tree
         :param parent: name of the parent folder to check
         :return: if the parent exists in the self._folder_tree dictionary or is defined in the self._df, True
@@ -131,28 +133,41 @@ class ProjectTemplate:
         except NameError:
             # If this does occur, then search for a LUT entry with that parent name & add it to the tree.
             # To prevent this issue from cascading to the next parent, check dictionary existence recursively
-            # until the root directory is reached. If the parent doesn't exist yet, it should be created.
+            # until the root directory is reached. If the parent doesn't exist yet, it should be added to dict.
             names: List[str] = self._df.loc['folder_names'].to_list()
             if parent not in names:
                 print('Parent folder {0} does not exist in the template file'.format(parent))
                 in_dict_flag = False
             else:
+                # if the parent is in the data frame, but dictionary key doesn't exist yet --> create the parent's key
                 index = names.index(parent)
+                # first check to see if that folder would be included in a minimal project tree
+                if not minimal or (self._df.at[index, 'minimal'] and minimal):
+                    # the parent's parent has to exist in the dictionary before adding the parent's key
+                    # hence, we must recursively check the parent branch until a folder is found that exists in the dict
+                    # base case is 'root' since that folder is always in the dictionary
+                    if not self._check_parent_branch_exists(minimal, self._df.at[index, 'parent']):
+                        in_dict_flag = False
+                    else:
+                        self._add_folder_to_tree(index)
+                else:
+                    print('Minimal template required.' +
+                          'Parent folder {0} is not included in the minimal project template.'.format(parent))
+                    in_dict_flag = False
         else:
             # if the dictionary key look up didn't raise NameError, then the parent exists in the dictionary.
-            # this function can return a True and the calling function can create the child folder without causing errors
+            # this function can return a True & the calling function can create the child folder without causing errors
             # Note: the calling function could be 'self.create_project_tree '
             #       or recursively it could be 'self._check_parent_branch_exists' in the 'except' clause
             pass
         finally:
             return in_dict_flag
 
-    def _add_folder_to_tree(self, df_index: int, minimal: bool) -> None:
-
-            name: str = self._df.at[df_index, 'folder_name']
-            self._folder_tree[name] = Folder(self._df.at[df_index, 'folder_name'],
-                                             self._folder_tree[self._df.at[df_index, 'parent']],
-                                             self._df.at[df_index, 'readme_text'])
+    def _add_folder_to_tree(self, df_index: int) -> None:
+        name: str = self._df.at[df_index, 'folder_name']
+        self._folder_tree[name] = Folder(self._df.at[df_index, 'folder_name'],
+                                         self._folder_tree[self._df.at[df_index, 'parent']],
+                                         self._df.at[df_index, 'readme_text'])
 
 
 if __name__ == '__main__':
