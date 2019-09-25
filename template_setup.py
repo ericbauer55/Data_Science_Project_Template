@@ -120,10 +120,16 @@ class ProjectTemplate:
             # until the root directory is reached. If the parent doesn't exist yet, it should be created.
             names: List[str] = self._df.loc['folder_names'].to_list()
             if parent not in names:
-                index = names.index(parent)
-            else:
                 print('Parent folder {0} does not exist in the template file'.format(parent))
                 in_dict_flag = False
+            else:
+                index = names.index(parent)
+        else:
+            # if the dictionary key look up didn't raise NameError, then the parent exists in the dictionary.
+            # this function can return a True and the calling function can create the child folder without causing errors
+            # Note: the calling function could be 'self.create_project_tree '
+            #       or recursively it could be 'self._check_parent_branch_exists' in the 'except' clause
+            pass
         finally:
             return in_dict_flag
 
