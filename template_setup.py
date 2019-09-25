@@ -94,7 +94,7 @@ class ProjectTemplate:
                     if not names[names == self._df.at[i, 'parent']].empty:
                         index = names[names == self._df.at[i, 'folder_name']].index[0]
                     else:
-
+                        pass
                     print('Dictionary key not yet created: ', err)
                 else:
                     folder_add_flag = True  # breaks the while loop so for loop moves onto next folder_name
