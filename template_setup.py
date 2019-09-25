@@ -71,7 +71,7 @@ class Folder:
 class ProjectTemplate:
     def __init__(self, template_file: str) -> None:
         self._template_file: str = template_file
-        self._df: pd.Dataframe = pd.read_csv(template_file)
+        self._df: pd.Dataframe = pd.read_csv(template_file, encoding="utf-8-sig")
         self._folder_tree: Dict[str, Folder] = {'root': Folder('root', None, None)}
 
     def create_project_tree(self, minimal: bool = False) -> bool:
@@ -130,11 +130,14 @@ class ProjectTemplate:
         in_dict_flag = True  # assume that the parent is already in the _folder_tree dictionary until proven otherwise
         try:
             folder: Folder = self._folder_tree[parent]
-        except NameError:
+        except KeyError:
             # If this does occur, then search for a LUT entry with that parent name & add it to the tree.
             # To prevent this issue from cascading to the next parent, check dictionary existence recursively
             # until the root directory is reached. If the parent doesn't exist yet, it should be added to dict.
-            names: List[str] = self._df.loc['folder_names'].to_list()
+            try:
+                names: List[str] = (self._df.loc['folder_name']).to_list()
+            except Exception as err:
+                print(err.__repr__())
             if parent not in names:
                 print('Parent folder {0} does not exist in the template file'.format(parent))
                 in_dict_flag = False
@@ -171,7 +174,9 @@ class ProjectTemplate:
 
 
 if __name__ == '__main__':
-    proj = ProjectTemplate('data_science_project_template.csv')
-    proj.create_project_tree()
+    # proj = ProjectTemplate('data_science_project_template.csv')
+    proj = ProjectTemplate('backwards_child_definition_test.csv')
+    print(proj._df.columns.to_list())
+    proj.create_project_tree2()
 
 

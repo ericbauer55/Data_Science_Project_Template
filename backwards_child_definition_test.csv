@@ -1,0 +1,6 @@
+id,folder_name,parent,minimal,readme_text
+1,level 5,level 4,1,testing when a child gets defined in the LUT before its parent
+2,level 4,level 3,1,testing when a child gets defined in the LUT before its parent
+3,level 3,level 2,1,testing when a child gets defined in the LUT before its parent
+4,level 2,level 1,1,testing when a child gets defined in the LUT before its parent
+5,level 1,root,1,testing when a child gets defined in the LUT before its parent
