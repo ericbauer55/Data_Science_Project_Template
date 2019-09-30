@@ -71,7 +71,10 @@ class Folder:
 class ProjectTemplate:
     def __init__(self, template_file: str) -> None:
         self._template_file: str = template_file
-        self._df: pd.Dataframe = pd.read_csv(template_file, encoding="utf-8-sig")
+        try:
+            self._df: pd.Dataframe = pd.read_csv(template_file, encoding="utf-8-sig")
+        except FileNotFoundError:
+            print('Template file not found in the root directory')
         self._folder_tree: Dict[str, Folder] = {'root': Folder('root', None, None)}
 
     @property
