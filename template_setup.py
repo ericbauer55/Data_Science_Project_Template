@@ -74,6 +74,10 @@ class ProjectTemplate:
         self._df: pd.Dataframe = pd.read_csv(template_file, encoding="utf-8-sig")
         self._folder_tree: Dict[str, Folder] = {'root': Folder('root', None, None)}
 
+    @property
+    def n_folders(self):
+        return len(self._folder_tree)
+
     def create_project_tree(self, minimal: bool = False) -> bool:
         creation_success: bool = True  # assume the tree will be created successfully until an error flags this as false
         for i in range(self._df.shape[0]):
@@ -150,9 +154,11 @@ class ProjectTemplate:
 
 
 if __name__ == '__main__':
-    # proj = ProjectTemplate('data_science_project_template.csv')
     proj = ProjectTemplate('backwards_child_definition_test.csv')
-    proj.create_project_tree()
-    # TODO: check to make sure circular folder refernces don't infinite loop
+    if proj.create_project_tree():
+        print('Project was successfully created with {0} folders'.format(proj.n_folders))
+    else:
+        print('Project was not successfully created.')
+
 
 
