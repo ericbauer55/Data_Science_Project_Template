@@ -164,7 +164,8 @@ class ProjectTemplate:
 
 
 if __name__ == '__main__':
-    proj = ProjectTemplate('backwards_child_definition_test.csv')
+    # proj = ProjectTemplate('backwards_child_definition_test.csv')
+    proj = ProjectTemplate('data_science_project_template.csv')
     if proj.create_project_tree():
         print('Project was successfully created with {0} folders'.format(proj.n_folders))
     else:
