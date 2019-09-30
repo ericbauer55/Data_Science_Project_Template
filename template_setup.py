@@ -83,7 +83,7 @@ class ProjectTemplate:
         for i in range(self._df.shape[0]):
             # first check to see if that folder would be included in a minimal project tree!
             if not minimal or (self._df.at[i, 'minimal'] and minimal):  # see Karnaugh map
-                if not self._check_parent_branch_exists(minimal, self._df.at[i, 'parent']):
+                if not self._check_parent_branch_exists(minimal, self._df.at[i, 'parent'], [self._df.at[i, 'folder_name']]):
                     # if the any folder along the chain doesn't have a parent defined in the look-up table (LUT),
                     # then the child at index=i cannot be added without raising a NameError when looking up a parent key
                     # in the self._folder_tree dictionary of Folder objects. Project creation should end at this point
@@ -93,7 +93,7 @@ class ProjectTemplate:
                     self._add_folder_to_tree(i)
         return creation_success
 
-    def _check_parent_branch_exists(self, minimal: bool, parent: str) -> bool:
+    def _check_parent_branch_exists(self, minimal: bool, parent: str, explored: List[str]) -> bool:
         """
         This function checks if the @parent folder exists in the self._folder_tree dictionary
 
@@ -106,6 +106,7 @@ class ProjectTemplate:
 
         :param minimal: flag of whether the folder tree should reflect a minimal project tree
         :param parent: name of the parent folder to check
+        :param explored: list of names of folders that have been explored. used to prevent circular references
         :return: if the parent exists in the self._folder_tree dictionary or is defined in the self._df, True
         """
         # It's possible that children folders are entered before their parent in the look-up table (LUT)
@@ -121,7 +122,13 @@ class ProjectTemplate:
             if parent not in names:
                 print('Parent folder {0} does not exist in the template file'.format(parent))
                 in_dict_flag = False
+            elif parent in explored:
+                # the circular reference to a node already explored should raise an error
+                print('The parent of folder {0} refers to a child folder already explored'.format(parent))
+                in_dict_flag = False
             else:
+                # the parent is about to be explored since it exists and has not already been explored
+                explored.append(parent)
                 # if the parent is in the data frame, but dictionary key doesn't exist yet --> create the parent's key
                 index = names.index(parent)
                 # first check to see if that folder would be included in a minimal project tree
@@ -129,7 +136,7 @@ class ProjectTemplate:
                     # the parent's parent has to exist in the dictionary before adding the parent's key
                     # hence, we must recursively check the parent branch until a folder is found that exists in the dict
                     # base case is 'root' since that folder is always in the dictionary
-                    if not self._check_parent_branch_exists(minimal, self._df.at[index, 'parent']):
+                    if not self._check_parent_branch_exists(minimal, self._df.at[index, 'parent'], explored):
                         in_dict_flag = False
                     else:
                         self._add_folder_to_tree(index)
